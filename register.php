@@ -76,67 +76,67 @@ try{
     $pdo = openConnect2025();
     $pdo->beginTransaction();
 
-// カウンターの行をロック
-$stmt = $pdo->prepare("SELECT current_count FROM entry_status WHERE id = 1 FOR UPDATE");
-$stmt->execute();
-$count = $stmt->fetchColumn();
-
-if ($count >= MAX_CAPACITY) {
-    if ($pdo && $pdo->inTransaction()) {
-    	$pdo->rollBack();
-    }
-	$overCapactyFlag = true;
-    throw new Exception("定員オーバー");
-}
+	// カウンターの行をロック
+	$stmt = $pdo->prepare("SELECT current_count FROM entry_status WHERE id = 1 FOR UPDATE");
+	$stmt->execute();
+	$count = $stmt->fetchColumn();
+	
+	if ($count >= MAX_CAPACITY) {
+	    if ($pdo && $pdo->inTransaction()) {
+		$pdo->rollBack();
+	    }
+		$overCapactyFlag = true;
+	    throw new Exception("定員オーバー");
+	}
 
 // challenger テーブルに追加
-
-$sql = "INSERT INTO `challenger` (`fName`, `lName`, `fNameKana`, `lNameKana`, `school`, `grade`, `gender`,`bloodtype`,`birthday`) VALUES " . "(:fName,:lName,:fNameKana,:lNameKana,:school,:grade,:gender,:bloodtype,:birthday)";
-$stmt = $pdo->prepare($sql);
-
-$insert = array();
-
-$insert = array(
-    ':fName' => $firstName,
-    ':lName' => $lastName,
-    ':fNameKana' => $firstNameKana,
-    ':lNameKana' => $lastNameKana,
-    ':school' => $school,
-    ':grade' => $grade,
-    ':gender' => $sex,
-	':bloodtype' => $bloodtype,
-	':birthday' => $birth
-);
-
-$stmt->execute($insert);
-$id = $pdo->lastInsertId();   
-
-$insert = array();
-
-//  detail テーブルに追加
-
-$sql = "INSERT INTO `detail`(`cid`,`mailAddress`, `pname`, `address`, `tel`, `emer`, `pnotice`) VALUES (:cid,:mail,:parName,:address,:phone,:emer,:detailNotice)";
-$stmt = $pdo->prepare($sql);
-
-$insert = array(
-    ':cid' => $id,
-    ':mail' => $mail,
-    ':parName' => $parName,
-    ':address' => $address,
-    ':phone' => $phone,
-    ':emer' => $emer,
-    ':detailNotice' => $detailNotice
-);
-
-$stmt->execute($insert);
-
-// カウント更新
-$stmt = $pdo->prepare("UPDATE entry_status SET current_count = current_count + 1 WHERE id = 1");
-$stmt->execute();
-
-$pdo->commit();
-
-$appSuccessFlag = true;
+	
+	$sql = "INSERT INTO `challenger` (`fName`, `lName`, `fNameKana`, `lNameKana`, `school`, `grade`, `gender`,`bloodtype`,`birthday`) VALUES " . "(:fName,:lName,:fNameKana,:lNameKana,:school,:grade,:gender,:bloodtype,:birthday)";
+	$stmt = $pdo->prepare($sql);
+	
+	$insert = array();
+	
+	$insert = array(
+	    ':fName' => $firstName,
+	    ':lName' => $lastName,
+	    ':fNameKana' => $firstNameKana,
+	    ':lNameKana' => $lastNameKana,
+	    ':school' => $school,
+	    ':grade' => $grade,
+	    ':gender' => $sex,
+		':bloodtype' => $bloodtype,
+		':birthday' => $birth
+	);
+	
+	$stmt->execute($insert);
+	$id = $pdo->lastInsertId();   
+	
+	$insert = array();
+	
+	//  detail テーブルに追加
+	
+	$sql = "INSERT INTO `detail`(`cid`,`mailAddress`, `pname`, `address`, `tel`, `emer`, `pnotice`) VALUES (:cid,:mail,:parName,:address,:phone,:emer,:detailNotice)";
+	$stmt = $pdo->prepare($sql);
+	
+	$insert = array(
+	    ':cid' => $id,
+	    ':mail' => $mail,
+	    ':parName' => $parName,
+	    ':address' => $address,
+	    ':phone' => $phone,
+	    ':emer' => $emer,
+	    ':detailNotice' => $detailNotice
+	);
+	
+	$stmt->execute($insert);
+	
+	// カウント更新
+	$stmt = $pdo->prepare("UPDATE entry_status SET current_count = current_count + 1 WHERE id = 1");
+	$stmt->execute();
+	
+	$pdo->commit();
+	
+	$appSuccessFlag = true;
 
 } catch (Exception $e) {
     if ($pdo && $pdo->inTransaction()) {
